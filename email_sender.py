@@ -2,6 +2,7 @@
 from email.message import EmailMessage
 from typing import List, Optional
 import mimetypes
+from email.utils import formataddr
 import os
 
 class EmailBuilder:
@@ -36,7 +37,7 @@ class EmailBuilder:
     def build(self) -> EmailMessage:
         msg = EmailMessage()
         msg['Subject'] = self.subject
-        msg['From'] = self.sender
+        msg['From'] = formataddr(("Idea Generator Bot", self.sender))
         msg['To'] = ', '.join(self.recipients)
         if self.cc:
             msg['Cc'] = ', '.join(self.cc)

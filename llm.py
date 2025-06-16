@@ -38,14 +38,19 @@ def generate_with_tinyllama(prompt: str, model: str = "tinyllama:latest", stream
     
     return None
 
-def generate_with_gemini():
-    # Set up your API key (from Google AI Studio or console)
+
+def generate_with_gemini(prompt: str) -> str:
+    # Load API key from environment
     genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
-    model = genai.GenerativeModel("gemini-1.5-flash")  # or "gemini-1.5-pro"
-    response = model.generate_content("Explain how AI works in a few words")
+    # Initialize the model
+    model = genai.GenerativeModel("gemini-1.5-flash")  # You can change to "gemini-1.5-pro" if needed
 
-    print(response.text)
+    # Generate response
+    response = model.generate_content(prompt)
+
+    # Return response text
+    return response.text.strip()
 
 if __name__ == "__main__":
     generate_with_gemini()
