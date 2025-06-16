@@ -1,48 +1,63 @@
-# Functions to retrieve and process latest info from news api;
-
 import requests
 import trafilatura
+from typing import List
+from datetime import datetime
 
-def fetch_latest_news_with_content(category: str, top_k: int, api_key: str):
-    url = "https://gnews.io/api/v4/top-headlines"
-    params = {
-        "topic": category.lower(),
-        "lang": "en",
-        "max": top_k,
-        "token": api_key
-    }
-
-    response = requests.get(url, params=params)
-    if response.status_code != 200:
-        raise Exception(f"API error: {response.status_code} - {response.text}")
+def fetch_latest_news_with_content(categories: List[str], top_k: int, api_key: str):
+    """
+    Fetches top news articles across multiple categories with full content.
     
-    data = response.json()
-    articles = data.get("articles", [])
+    Args:
+        categories (List[str]): List of GNews categories (e.g., ["technology", "business"])
+        top_k (int): Total number of top articles to return (combined from all categories)
+        api_key (str): Your GNews API key
 
-    full_articles = []
-    for article in articles[:top_k]:
-        article_url = article.get("url")
-        downloaded = trafilatura.fetch_url(article_url)
-        full_text = trafilatura.extract(downloaded) if downloaded else None
+    Returns:
+        List[dict]: List of articles with full content
+    """
+    url = "https://gnews.io/api/v4/top-headlines"
+    seen_urls = set()
+    all_articles = []
 
-        full_articles.append({
-            "title": article.get("title"),
-            "url": article_url,
-            "publishedAt": article.get("publishedAt"),
-            "full_content": full_text or "Could not extract full content."
-        })
+    for category in categories:
+        params = {
+            "topic": category.lower(),
+            "lang": "en",
+            "max": top_k,
+            "token": api_key
+        }
 
-    return full_articles
+        response = requests.get(url, params=params)
+        if response.status_code != 200:
+            print(f"[WARNING] Failed to fetch {category}: {response.status_code}")
+            continue
 
-# Example usage
-if __name__ == "__main__":
-    API_KEY = "f528642ee43960832634d4338db8ec92"
-    CATEGORY = ["technology", "business"]
-    TOP_K = 3
+        articles = response.json().get("articles", [])
+        
+        for article in articles:
+            article_url = article.get("url")
+            if article_url in seen_urls:
+                continue  # skip duplicates
+            seen_urls.add(article_url)
 
-    news = fetch_latest_news_with_content(CATEGORY, TOP_K, API_KEY)
-    for idx, article in enumerate(news, 1):
-        print(f"\n[{idx}] {article['title']}")
-        print(f"Published: {article['publishedAt']}")
-        print(f"URL: {article['url']}")
-        print(f"\nFull Content:\n{article['full_content']}...")  # print first 1000 chars
+            downloaded = trafilatura.fetch_url(article_url)
+            full_text = trafilatura.extract(downloaded) if downloaded else None
+
+            all_articles.append({
+                "title": article.get("title"),
+                "url": article_url,
+                "publishedAt": article.get("publishedAt"),
+                "full_content": full_text or "Could not extract full content.",
+                "category": category
+            })
+
+    # Optional: sort articles by published date (descending)
+    def parse_date(article):
+        try:
+            return datetime.fromisoformat(article["publishedAt"].replace("Z", "+00:00"))
+        except:
+            return datetime.min
+
+    sorted_articles = sorted(all_articles, key=parse_date, reverse=True)
+
+    return sorted_articles[:top_k]

@@ -2,6 +2,11 @@
 
 import requests
 from typing import Optional
+import os
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def generate_with_tinyllama(prompt: str, model: str = "tinyllama:latest", stream: bool = False, api_url: str = "http://localhost:11434/api/generate") -> Optional[str]:
     """
@@ -32,3 +37,15 @@ def generate_with_tinyllama(prompt: str, model: str = "tinyllama:latest", stream
         print(f"[ERROR] Unexpected response format: {e}")
     
     return None
+
+def generate_with_gemini():
+    # Set up your API key (from Google AI Studio or console)
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+    model = genai.GenerativeModel("gemini-1.5-flash")  # or "gemini-1.5-pro"
+    response = model.generate_content("Explain how AI works in a few words")
+
+    print(response.text)
+
+if __name__ == "__main__":
+    generate_with_gemini()
