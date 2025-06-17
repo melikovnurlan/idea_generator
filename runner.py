@@ -10,6 +10,8 @@ import smtplib
 import os 
 from dotenv import load_dotenv
 
+from utils import extract_json_values
+
 load_dotenv()
 
 if __name__ == "__main__":
@@ -28,9 +30,10 @@ if __name__ == "__main__":
 
     # List of recipients
     recipient_list = [
-        "muradaliyev2229@gmail.com",
+        # "muradaliyev2229@gmail.com",
         "melikovnurlandodo@gmail.com"
     ]
+
     # Send email to multiple recipients
     email = EmailBuilder(
         subject=subject,

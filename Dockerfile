@@ -1,0 +1,9 @@
+CMD ["python", "main.py"]
+
+
+
+
+
+
+
+
