@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
     # List of recipients
     recipient_list = [
-        # "muradaliyev2229@gmail.com",
+        "muradaliyev2229@gmail.com",
         "melikovnurlandodo@gmail.com"
     ]
 
